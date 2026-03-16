@@ -1,0 +1,19 @@
+---
+haproxy_version: "3.2"
+haproxy_config: "default.haproxy.conf.j2"
+haproxy_allow_bind_non_local_ip: true
+haproxy_max_open_files: "5000000"
+
+haproxy_dataplaneapi:
+  version: "3.2.9"
+  user: admin
+  password: adminpwd
+  api:
+    command: /usr/bin/dataplaneapi
+    host: 0.0.0.0
+    port: 5555
+    haproxy_bin: /usr/sbin/haproxy
+    config_file: /usr/local/etc/haproxy/haproxy.cfg
+    reload_cmd: "kill -SIGUSR2 1"
+    restart_cmd: "kill -SIGUSR2 1"
+    reload_delay: 5

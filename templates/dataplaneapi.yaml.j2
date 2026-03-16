@@ -1,0 +1,17 @@
+name: api
+dataplaneapi:
+  host: {{ haproxy_dataplaneapi.api.host }}
+  port: {{ haproxy_dataplaneapi.api.port }}
+  socket_path: "/var/run/data-plane.sock"
+  userlist:
+    userlist: haproxy-dataplaneapi
+  resources:
+    maps_dir: /etc/haproxy/maps
+haproxy:
+  config_file: {{ haproxy_dataplaneapi.api.config_file }}
+  haproxy_bin: {{ haproxy_dataplaneapi.api.haproxy_bin }}
+  reload:
+    reload_strategy: custom
+    reload_cmd: {{ haproxy_dataplaneapi.api.reload_cmd }}
+    restart_cmd: {{ haproxy_dataplaneapi.api.restart_cmd }}
+    reload_delay: {{ haproxy_dataplaneapi.api.reload_delay }}

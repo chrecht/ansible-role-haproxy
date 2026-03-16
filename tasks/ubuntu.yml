@@ -1,0 +1,95 @@
+---
+#
+# HAProxy role (Ubuntu)
+#
+
+- name: Allow bind on non-local IP
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_nonlocal_bind
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+  when: haproxy_allow_bind_non_local_ip | bool
+
+- name: Add apt repository for HAProxy {{ haproxy_version }}
+  ansible.builtin.apt_repository:
+    repo: "ppa:vbernat/haproxy-{{ haproxy_version }}"
+    state: present
+    update_cache: true
+
+- name: Install HAProxy and socat
+  ansible.builtin.apt:
+    name:
+      - haproxy
+      - socat
+    state: present
+
+- name: Install HAProxy Data Plane API
+  block:
+    - name: Download HAProxy Data Plane API package
+      ansible.builtin.get_url:
+        url: "https://github.com/haproxytech/dataplaneapi/releases/download/v{{ haproxy_dataplaneapi.version }}/dataplaneapi_{{ haproxy_dataplaneapi.version }}_linux_amd64.deb"
+        dest: "/tmp/dataplaneapi_{{ haproxy_dataplaneapi.version }}_linux_amd64.deb"
+        mode: "0644"
+
+    - name: Install HAProxy Data Plane API package
+      ansible.builtin.apt:
+        deb: "/tmp/dataplaneapi_{{ haproxy_dataplaneapi.version }}_linux_amd64.deb"
+        state: present
+
+    - name: Copy Data Plane API config
+      ansible.builtin.template:
+        src: dataplaneapi.yaml.j2
+        dest: /etc/haproxy/dataplaneapi.yaml
+        owner: root
+        group: root
+        mode: "0644"
+      notify: restart haproxy
+
+- name: Create required HAProxy directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - /etc/systemd/system/haproxy.service.d
+    - /etc/haproxy/maps
+
+- name: Configure HAProxy systemd override for max open files
+  ansible.builtin.template:
+    src: haproxy.service.d.override.j2
+    dest: /etc/systemd/system/haproxy.service.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Generate dhparams file
+  ansible.builtin.command:
+    cmd: openssl dhparam -out /etc/haproxy/dhparam.pem 2048
+    creates: /etc/haproxy/dhparam.pem
+
+- name: Deploy HAProxy config
+  ansible.builtin.template:
+    src: "{{ haproxy_config }}"
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload haproxy
+
+- name: Deploy 200.http error page
+  ansible.builtin.template:
+    src: 200.http
+    dest: /etc/haproxy/errors/200.http
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload haproxy
+
+- name: Validate HAProxy config
+  ansible.builtin.command: haproxy -f /etc/haproxy/haproxy.cfg -c
+  changed_when: false

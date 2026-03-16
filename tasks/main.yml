@@ -1,0 +1,7 @@
+---
+# haproxy 
+#
+
+- name: install haproxy (Ubuntu)
+  include_tasks: ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
