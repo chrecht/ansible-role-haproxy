@@ -12,21 +12,9 @@
     reload: true
   when: haproxy_allow_bind_non_local_ip | bool
 
-- name: Create apt keyrings directory
-  ansible.builtin.file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: "0755"
-
-- name: Download HAProxy apt signing key
-  ansible.builtin.get_url:
-    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x8C47BE8E75BCA694"
-    dest: /etc/apt/keyrings/haproxy.asc
-    mode: "0644"
-
 - name: Add apt repository for HAProxy {{ haproxy_version }}
   ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/haproxy.asc] https://ppa.launchpadcontent.net/vbernat/haproxy-{{ haproxy_version }}/ubuntu {{ ansible_distribution_release }} main"
+    repo: "ppa:vbernat/haproxy-{{ haproxy_version }}"
     state: present
     update_cache: true
 
