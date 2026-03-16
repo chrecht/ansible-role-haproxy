@@ -1,5 +1,5 @@
 # ansible-role-haproxy
-![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/chrecht/ansible-role-keepalived?sort=semver&label=version)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/chrecht/ansible-role-haproxy?sort=semver&label=version)
 
 Ansible role to install and configure [HAProxy](https://www.haproxy.org/) on Ubuntu, including optional installation of the [HAProxy Data Plane API](https://www.haproxy.com/documentation/dataplaneapi/latest/).
 
